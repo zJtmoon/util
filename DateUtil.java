@@ -1,190 +1,217 @@
 package com.creditease.honeybot.utils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Calendar;
-import java.util.Date;
+import com.alibaba.fastjson.JSONObject;
+import com.creditease.honeybot.entity.GatewayResponse;
+import com.creditease.honeybot.entity.GatewayResult;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import javax.annotation.PostConstruct;
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalField;
+import java.util.*;
 
 /**
- * Created by donghuicun on 2018/11/14.
+ * date formatter with ThreadLocal
+ *
+ * @author <a href="mailto:weifeng14@creditease.cn">Feng Wei</a>
+ * @version 1.00 2017/4/21
  */
-public class DateUtil {
 
-    /**
-     * 当前时区的时间（LocalDateTime）
-     * @param date
-     * @return
-     */
+
+public class DateUtil {
+    private static ZoneOffset localZoneOffset = ZoneOffset.of("+8");
+    private static SimpleDateFormat SDF_HM = new SimpleDateFormat("HH:mm");
+
+
+    private static List<String> robotCodeList;
+
+    public void init() {
+        robotCodeList = new ArrayList<>();
+        robotCodeList.add("yrd_M0_B5_0-001");
+        robotCodeList.add("yrd_M0_B5_1-2-001");
+        robotCodeList.add("yrd_M0_B12_0-001");
+        robotCodeList.add("yrd_M0_B12_1-2-001");
+        robotCodeList.add("yrd_M0_B6_0-001");
+        robotCodeList.add("yrd_M0_B6_1-2-001");
+    }
+        //private static List<String> robotCodeList = asList("yrd_M0_B5_0-001", "yrd_M0_B5_1-2-001", "yrd_M0_B12_0-001",
+          // "yrd_M0_B12_1-2-001", "yrd_M0_B6_0-001", "yrd_M0_B6_1-2-001", "yrd_M0_B0_1-2-001", "yrd_M0_B0_0-001");
+
+
+    public static String getHMStr(Date date) {
+        return SDF_HM.format(date);
+    }
+
     public static LocalDateTime toLocalDateTime(Date date) {
         Instant instant = date.toInstant();
         ZoneId zoneId = ZoneId.systemDefault();
         return instant.atZone(zoneId).toLocalDateTime();
     }
 
-    /**
-     * 当前时区的日期（Date）
-     * @param localDateTime
-     * @return
-     */
     public static Date toDate(LocalDateTime localDateTime) {
         ZoneId zoneId = ZoneId.systemDefault();
         ZonedDateTime zdt = localDateTime.atZone(zoneId);
         return Date.from(zdt.toInstant());
     }
 
-    /**
-     * 获取今天开始时间
-     * @return
-     */
-    public static Date getTodayStart(){
-        return getDayStart(Calendar.getInstance());
-    }
-
-    /**
-     * 获取今天结束时间
-     * @return
-     */
-    public static Date getTodayEnd(){
-        return getDayEnd(Calendar.getInstance());
-    }
-
-    /**
-     * 获取某天开始时间
-     * @return
-     */
-    public static Date getDayStart(Calendar calendar) {
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        return calendar.getTime();
-    }
-
-    /**
-     * 获取某天结束时间
-     * @return
-     */
-    public static Date getDayEnd(Calendar calendar) {
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        return calendar.getTime();
-    }
-
-    /**
-     * 格式化当前时间(String)
-     * yyyy-MM-dd
-     * @return
-     */
-    public static String localDate2Str(){
-        Date date =new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-        return sdf.format(date);
-    }
-
-    /**
-     * 格式化昨天时间(String)
-     * yyyy-MM-dd
-     * @return
-     */
-    public static String beforeDate2Str(){
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -1); //昨天
-        Date date = calendar.getTime();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return sdf.format(date);
-    }
-
-    /**
-     * 判断是否是过去的日期
-     * @param  str
-     * @return
-     */
-    public static boolean isPastDate(String str) throws ParseException{
-        boolean flag = false;
-        Date nowDate = new Date();
-        Date pastDate = null;
-        //格式化日期
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        //将字符串转为日期格式，如果此处字符串为非合法日期就会抛出异常。
-        pastDate = sdf.parse(str);
-        //调用Date里面的before方法来做判断
-        flag = pastDate.before(nowDate);
-        return flag;
-    }
-
-    /**
-     * 日期向后增加小时
-     * @param date
-     * @param hour
-     * @return
-     */
-    public static Date addDateHour(Date date, int hour){
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.HOUR, hour);// 24小时制
-        date = cal.getTime();
-        return date;
-    }
-
-    /**
-     * 比较两个日期Date2比Date1(年月日)多的天数,(只考虑天数不考虑时间)
-     * 例如:2017-01-25 23:59:59与 2017-01-26 00:00:00   返回1
-     * 2017-01-25 与 2017-01-25   返回0
-     * 2017-01-28 与 2017-01-25   返回-3
-     * @param Date1
-     * @param Date2
-     * @return
-     */
-    public static int differDayQty(Date Date1, Date Date2){
-        Calendar calendar = Calendar.getInstance();
-        calendar.clear();
-
-        calendar.setTime(Date1);
-        int day1 = calendar.get(Calendar.DAY_OF_YEAR);
-        int year1 = calendar.get(Calendar.YEAR);
-
-        calendar.setTime(Date2);
-        int day2 = calendar.get(Calendar.DAY_OF_YEAR);
-        int year2 = calendar.get(Calendar.YEAR);
-
-        int sign = 0;
-        int days = 0;
-        if(year1 != year2){
-            sign = year1<year2 ? 1 : -1;
-            int minYear = min(year1, year2);
-            int maxYear = max(year1, year2);
-            for (int i = minYear; i < maxYear; i++) {
-                days += (i%4 == 0 && i%100 != 0 || i%400 == 0) ? 366 : 365;
-            }
+    public static int compareDay(LocalDateTime day1, LocalDateTime day2) {
+        int y = day1.getYear() - day2.getYear();
+        if (y != 0) {
+            return y;
         }
-        return day2 - day1 + sign*days;
+        return day1.getDayOfYear() - day2.getDayOfYear();
     }
 
+    public static String localDate2Str(LocalDate localDate) {
+        if (localDate == null) {
+            return null;
+        }
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return localDate.format(fmt);
+    }
 
-    /**
-     * 获取日期几号 dateStr:2019-06-06    返回6
-     * @param dateStr
-     * @return
-     */
-    public static String getDayStr(String dateStr){
-        String dayStr = "";
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    public static String localDateTime2Str(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return localDateTime.format(fmt);
+    }
+
+    public static String localDate2Str() {
+        return localDate2Str(LocalDate.now());
+    }
+
+    public static String localDateTime2Str() {
+        return localDateTime2Str(LocalDateTime.now());
+    }
+
+    public static LocalDateTime str2LocalDateTime(String dateTimeStr) {
+        if (StringUtils.isEmpty(dateTimeStr)) {
+            return null;
+        }
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return LocalDateTime.parse(dateTimeStr, df);
+    }
+
+    public static Long localDateTime2Milli(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return null;
+        }
+        return localDateTime.toInstant(localZoneOffset).toEpochMilli();
+    }
+
+    public static Long str2DateTimeMilli(String dateTimeStr) {
+        if (StringUtils.isEmpty(dateTimeStr)) {
+            return null;
+        }
+        return localDateTime2Milli(str2LocalDateTime(dateTimeStr));
+    }
+    private static String parseDate(String strDate){
+        String yearStr = null;
+        String monthStr = null;
+        String dayStr = null;
+
         try{
-            Date date = df.parse(dateStr);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
-            dayStr = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-        }catch (Exception e){
-            throw new RuntimeException(e);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = sdf.parse(strDate);
+            Calendar calendar = Calendar.getInstance();//日历对象
+            calendar.setTime(date);//设置当前日期
+            yearStr = calendar.get(Calendar.YEAR)+"";//获取年份
+            int month = calendar.get(Calendar.MONTH) + 1;//获取月份
+            monthStr = month < 10 ? "0" + String.valueOf(month) : String.valueOf(month)+ "";
+            int day = calendar.get(Calendar.DATE);//获取日
+            dayStr = day < 10 ? "0" + String.valueOf(day) : String.valueOf(day) + "";
+        }catch (Exception ex){
+            //log.info("发送短信时，处理日期失败");
         }
-        return dayStr;
+
+        return yearStr +"年" + monthStr + "月" + dayStr+ "日";
+    }
+
+
+    public static List<Date> getBetweenDates(String startDate, String endDate) throws Exception {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Date begin = df.parse(startDate);
+        Date end = df.parse(endDate);
+        List<Date> result = new ArrayList<Date>();
+        Calendar tempStart = Calendar.getInstance();
+        tempStart.setTime(begin);
+            /* Calendar tempEnd = Calendar.getInstance();
+            tempStart.add(Calendar.DAY_OF_YEAR, 1);
+            tempEnd.setTime(end);
+            while (tempStart.before(tempEnd)) {
+                result.add(tempStart.getTime());
+                tempStart.add(Calendar.DAY_OF_YEAR, 1);
+            }*/
+        while(begin.getTime()<= end.getTime()){
+            result.add(tempStart.getTime());
+            tempStart.add(Calendar.DAY_OF_YEAR, 1);
+            begin = tempStart.getTime();
+        }
+        return result;
+    }
+
+
+    public static void main(String[] args) {
+        /*
+        System.out.println(localDate2Str());
+        System.out.println(str2LocalDateTime("2019-01-05 18:34:21"));
+
+        String res;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        long lt = new Long(1544371200000L);
+        Date date = new Date(lt);
+        res = simpleDateFormat.format(date);
+        System.out.println(res);
+
+        long a = str2LocalDateTime("2019-01-11 00:00:00").toInstant(ZoneOffset.of("+8")).toEpochMilli();
+        System.out.println(a);
+
+        /**lt = str2DateTimeMilli("2019-05-06 00:00:00");
+        System.out.println(lt == a);*/
+
+
+        Map<String, String> callRountMap = new HashMap<>();
+        callRountMap.put("callCount", String.valueOf("1"));
+        callRountMap.put("callResult", "2");
+        callRountMap.put("callStatus", "3");
+
+
+
+        Map<String, Map<String, String>> callInfoMap = new HashMap<>();
+        callInfoMap.put("firstCallResult",callRountMap);
+        callInfoMap.put("secondCallResult", callRountMap);
+        callInfoMap.put("thirdCallResult", callRountMap);
+
+
+        String contentStr = JSONObject.toJSONString(callInfoMap);
+        System.out.println(contentStr);
+        if(Double.doubleToLongBits(0.1) < Double.doubleToLongBits(0.001)){
+            System.out.println("mmmm");
+        }
+
+
+        try{
+            GatewayResponse gatewayResponse = new GatewayResponse();
+            GatewayUtil.setGatewayResponse(0, "mmmm", gatewayResponse);
+            GatewayResult gatewayResult = new GatewayResult();
+            gatewayResult.setAmount(10000.09);
+            gatewayResponse.setCode(2);
+            gatewayResponse.setData(gatewayResult);
+            System.out.println(gatewayResponse.toString());
+        }catch (Exception ex){
+            System.out.println("dfgsfgsdgsdg");
+
+        }
+
+
     }
 }
