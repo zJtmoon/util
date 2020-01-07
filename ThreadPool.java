@@ -1,4 +1,3 @@
-package com.creditease.honeybot.utils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,3 +13,12 @@ public class ThreadPool {
 	public  static ExecutorService threadPoolAudio = Executors.newFixedThreadPool(30);
 	public  static ExecutorService cachePoolCase = Executors.newCachedThreadPool();
 }
+
+
+
+
+
+
+
+
+
