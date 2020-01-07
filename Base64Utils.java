@@ -1,16 +1,11 @@
-package com.creditease.honeybot.utils;
+
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Base64;
 
-/**
- * @ Author     ：TangXD
- * @ Date       ：Created in 10:24 2018/10/08
- * @ Description：${description}
- * @ Modified By：
- */
+
 public class Base64Utils {
 
     /**
