@@ -1,11 +1,4 @@
-package com.creditease.honeybot.utils;
 
-/**
- * @ Author     ：TangXD
- * @ Date       ：Created in 10:24 2018/10/08
- * @ Description：字节数组相关工具类
- * @ Modified By：
- */
 public class ByteUtils {
 
 
