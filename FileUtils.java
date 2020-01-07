@@ -1,13 +1,4 @@
-package com.creditease.honeybot.utils;
 
-import java.io.*;
-
-/**
- * @ Author     ：TangXD
- * @ Date       ：Created in 10:24 2018/10/08
- * @ Description：${description}
- * @ Modified By：
- */
 public class FileUtils {
 
     /**
