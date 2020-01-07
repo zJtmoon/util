@@ -1,4 +1,3 @@
-package com.creditease.honeybot.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,9 +20,6 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import com.creditease.honeybot.vo.FileContentHolder;
-
 public class ExcelUtil {
 	
 	private ExcelUtil() {}
@@ -112,8 +108,7 @@ public class ExcelUtil {
 		default:
 			value = "";
 			break;
-			// throw new RuntimeException("非法的 celltype, celltype=" +
-			// currentCell.getCellType());
+			
 		}
 		if(value.endsWith(".0") ) {
 			value = value.replace(".0", "");
