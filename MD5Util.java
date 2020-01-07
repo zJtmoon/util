@@ -1,4 +1,3 @@
-package com.creditease.honeybot.utils;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
