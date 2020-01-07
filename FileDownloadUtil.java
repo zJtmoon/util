@@ -1,4 +1,3 @@
-package com.creditease.honeybot.utils;
 
 import java.io.OutputStream;
 
